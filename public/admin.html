@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Page</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #fff;
+      color: #333;
+    }
+    .login-container, .form-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .login-container input[type=password], .form-container input[type=text] {
+      width: 300px;
+      padding: 10px;
+      margin: 5px;
+      border-radius: 5px;
+      border: 1px solid #1DAAE5;
+    }
+    .login-container button, .form-container button {
+      padding: 10px 20px;
+      background-color: #1DAAE5;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .login-container button:hover, .form-container button:hover {
+      background-color: #159ac1;
+    }
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 200px;
+      background-color: #EB6195;
+      color: #fff;
+      padding: 20px;
+    }
+    .sidebar a {
+      color: #fff;
+      text-decoration: none;
+      display: block;
+      margin: 10px 0;
+    }
+    .sidebar a:hover {
+      text-decoration: underline;
+    }
+    .content {
+      margin-left: 220px;
+      padding: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    table, th, td {
+      border: 1px solid #EB6195;
+    }
+    th, td {
+      padding: 10px;
+      text-align: left;
+    }
+    th {
+      background-color: #EB6195;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <input type="password" id="adminPassword" placeholder="Enter admin password">
+    <button onclick="checkPassword()">Login</button>
+  </div>
+
+  <div class="form-container" style="display:none;">
+    <div class="sidebar">
+      <a href="#" onclick="showForm('register')">Mendaftarkan Pelanggan</a>
+      <a href="#" onclick="showForm('update')">Update Data</a>
+      <a href="#" onclick="showForm('updatePoint')">Update Nilai Point</a>
+      <a href="#" onclick="showForm('viewAll')">Lihat Semua Data</a>
+    </div>
+    <div class="content">
+      <div id="formContainer"></div>
+    </div>
+  </div>
+
+  <script>
+    function checkPassword() {
+      var password = document.getElementById('adminPassword').value;
+      if (password === 'admin123') {
+        document.querySelector('.login-container').style.display = 'none';
+        document.querySelector('.form-container').style.display = 'flex';
+      } else {
+        alert('Password salah!');
+      }
+    }
+
+    function showForm(formType) {
+      var formContainer = document.getElementById('formContainer');
+      if (formType === 'register') {
+        formContainer.innerHTML = `
+          <h2>Mendaftarkan Pelanggan</h2>
+          <input type="text" id="nama" placeholder="Nama">
+          <input type="text" id="telp" placeholder="Nomor Telepon">
+          <button onclick="registerCustomer()">Daftar</button>
+        `;
+      } else if (formType === 'update') {
+        formContainer.innerHTML = `
+          <h2>Update Data</h2>
+          <input type="text" id="telpUpdate" placeholder="Nomor Telepon">
+          <input type="text" id="namaUpdate" placeholder="Nama Baru">
+          <button onclick="updateCustomer()">Update</button>
+        `;
+      } else if (formType === 'updatePoint') {
+        formContainer.innerHTML = `
+          <h2>Update Nilai Point</h2>
+          <input type="text" id="telpPoint" placeholder="Nomor Telepon">
+          <input type="text" id="point" placeholder="Jumlah Point">
+          <button onclick="updatePoint()">Update</button>
+        `;
+      } else if (formType === 'viewAll') {
+        formContainer.innerHTML = `
+          <h2>Semua Data Pelanggan</h2>
+          <input type="text" id="search" placeholder="Cari berdasarkan nomor telepon..." onkeyup="searchTable()">
+          <div id="tableContainer"></div>
+        `;
+        loadAllData();
+      }
+    }
+
+    function registerCustomer() {
+      var nama = document.getElementById('nama').value;
+      var telp = document.getElementById('telp').value;
+      var no_pelanggan = `CRI-${Date.now()}`; // Generate unique customer number
+
+      fetch('/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ no_pelanggan: no_pelanggan, nama: nama, telp: telp, point: 0 }),
+      })
+        .then(response => response.json())
+        .then(data => {
+          alert('Pelanggan berhasil didaftarkan!');
+        });
+    }
+
+    function updateCustomer() {
+      var telp = document.getElementById('telpUpdate').value;
+      var nama = document.getElementById('namaUpdate').value;
+
+      fetch('/update', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ telp: telp, nama: nama }),
+      })
+        .then(response => response.json())
+        .then(data => {
+          alert('Data pelanggan berhasil diperbarui!');
+        });
+    }
+
+    function updatePoint() {
+      var telp = document.getElementById('telpPoint').value;
+      var point = document.getElementById('point').value;
+
+      fetch('/updatePoint', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ telp: telp, point: point }),
+      })
+        .then(response => response.json())
+        .then(data => {
+          alert('Point pelanggan berhasil diperbarui!');
+        });
+    }
+
+    function loadAllData() {
+      fetch('/all')
+        .then(response => response.json())
+        .then(data => {
+          var table = '<table><tr><th>NO PELANGGAN</th><th>NAMA</th><th>NOMOR TELEPON</th><th>JUMLAH POINT</th><th>ACTION</th></tr>';
+          data.forEach(row => {
+            table += `<tr>
+                        <td>${row.no_pelanggan}</td>
+                        <td>${row.nama}</td>
+                        <td>${row.telp}</td>
+                        <td>${row.point}</td>
+                        <td>
+                          <button onclick="editCustomer('${row.no_pelanggan}')">Edit</button>
+                          <a href="https://wa.me/${row.telp}" target="_blank">Hubungi Pelanggan</a>
+                        </td>
+                      </tr>`;
+          });
+          table += '</table>';
+          document.getElementById('tableContainer').innerHTML = table;
+        });
+    }
+
+    function searchTable() {
+      var input = document.getElementById('search');
+      var filter = input.value.toUpperCase();
+      var table = document.querySelector('#tableContainer table');
+      var tr = table.getElementsByTagName('tr');
+      for (var i = 1; i < tr.length; i++) {
+        var td = tr[i].getElementsByTagName('td')[2];
+        if (td) {
+          var txtValue = td.textContent || td.innerText;
+          if (txtValue.toUpperCase().indexOf(filter) > -1) {
+            tr[i].style.display = '';
+          } else {
+            tr[i].style.display = 'none';
+          }
+        }
+      }
+    }
+
+    function editCustomer(no_pelanggan) {
+      var customer = customers.find(cust => cust.no_pelanggan === no_pelanggan);
+      if (customer) {
+        showForm('update');
+        document.getElementById('telpUpdate').value = customer.telp;
+        document.getElementById('namaUpdate').value = customer.nama;
+      }
+    }
+  </script>
+</body>
+</html>

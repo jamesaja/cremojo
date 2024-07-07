@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Page</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #fff;
+      color: #333;
+    }
+    .header {
+      text-align: center;
+      padding: 20px;
+      background-color: #1DAAE5;
+      color: #fff;
+    }
+    .header h1 {
+      margin: 0;
+    }
+    .search-container {
+      text-align: center;
+      margin: 20px 0;
+    }
+    .search-container input[type=text] {
+      width: 50%;
+      padding: 12px;
+      border-radius: 5px;
+      border: 2px solid #1DAAE5;
+      font-size: 16px;
+      margin-right: 10px;
+    }
+    .search-container button {
+      padding: 12px 20px;
+      background-color: #1DAAE5;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .search-container button:hover {
+      background-color: #159ac1;
+    }
+    table {
+      width: 80%;
+      margin: 20px auto;
+      border-collapse: collapse;
+    }
+    table, th, td {
+      border: 1px solid #EB6195;
+    }
+    th, td {
+      padding: 10px;
+      text-align: center;
+    }
+    th {
+      background-color: #EB6195;
+      color: #fff;
+    }
+    .help-button {
+      text-align: center;
+      margin: 20px 0;
+    }
+    .help-button a {
+      text-decoration: none;
+      padding: 10px 20px;
+      background-color: #1DAAE5;
+      color: #fff;
+      border-radius: 5px;
+      display: inline-flex;
+      align-items: center;
+    }
+    .help-button a:hover {
+      background-color: #159ac1;
+    }
+    .help-button a i {
+      margin-right: 10px;
+    }
+    .popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #fff;
+      border: 2px solid #1DAAE5;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+      display: none;
+      z-index: 10;
+    }
+    .popup button {
+      background-color: #1DAAE5;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .popup button:hover {
+      background-color: #159ac1;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Loyalty Program - Cremojo Indonesia</h1>
+    <marquee>Selamat datang di Layanan Loyalty Program - Cremojo Indonesia</marquee>
+  </div>
+  <div class="search-container">
+    <input type="text" id="telp" placeholder="Masukkan nomor telepon...">
+    <button onclick="searchCustomer()">Cari</button>
+  </div>
+  <div id="result"></div>
+  <div class="help-button">
+    <a href="https://wa.me/6283831842777">
+      <i class="fab fa-whatsapp"></i>Bantuan/Daftar
+    </a>
+  </div>
+
+  <div class="popup" id="popup">
+    <p>Data tidak ditemukan!</p>
+    <button onclick="closePopup()">OK</button>
+  </div>
+
+  <script>
+    function searchCustomer() {
+      var telp = document.getElementById('telp').value;
+      fetch(`/search?telp=${telp}`)
+        .then(response => response.json())
+        .then(data => {
+          var resultDiv = document.getElementById('result');
+          if (data.length > 0) {
+            var table = '<table><tr><th>NO PELANGGAN</th><th>NAMA</th><th>NOMOR TELEPON</th><th>JUMLAH POINT</th></tr>';
+            data.forEach(row => {
+              table += `<tr><td>${row.no_pelanggan}</td><td>${row.nama}</td><td>${row.telp}</td><td>${row.point}</td></tr>`;
+            });
+            table += '</table>';
+            resultDiv.innerHTML = table;
+          } else {
+            openPopup();
+          }
+        });
+    }
+
+    function openPopup() {
+      var popup = document.getElementById('popup');
+      popup.style.display = 'block';
+    }
+
+    function closePopup() {
+      var popup = document.getElementById('popup');
+      popup.style.display = 'none';
+    }
+  </script>
+</body>
+</html>
